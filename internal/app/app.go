@@ -30,7 +30,9 @@ func NewApplication() (*Application, error) {
 
 	logger := log.New(os.Stdout, "", log.Ldate|log.Ltime)
 
-	pltdHandler := api.NewPLTDHandler()
+	pltdStore := store.NewPostgresPLTDStore(pgDB)
+
+	pltdHandler := api.NewPLTDHandler(pltdStore)
 	app := &Application{
 		Logger: logger,
 		PLTDHandler: pltdHandler,
