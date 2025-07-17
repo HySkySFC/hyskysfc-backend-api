@@ -8,6 +8,7 @@ import (
 	"database/sql"
 	"github.com/HySkySFC/hyskysfc-backend-api/internal/api"
 	"github.com/HySkySFC/hyskysfc-backend-api/internal/store"
+	"github.com/HySkySFC/hyskysfc-backend-api/migrations"
 )
 
 type Application struct {
@@ -21,6 +22,12 @@ func NewApplication() (*Application, error) {
 	if err != nil {
 		return nil, err
 	}
+	
+	err = store.MigrateFS(pgDB, migrations.FS, ".")
+	if err != nil {
+		panic(err)
+	}
+
 	logger := log.New(os.Stdout, "", log.Ldate|log.Ltime)
 
 	pltdHandler := api.NewPLTDHandler()
