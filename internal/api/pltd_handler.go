@@ -30,5 +30,5 @@ func (ph *PLTDHandler) HandleGetPLTDByID(w http.ResponseWriter, r *http.Request)
 } 
 
 func (ph *PLTDHandler) HandleCreatePLTD(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "Create a PLTD mesin")
+	fmt.Fprintf(w, "Create a PLTD mesin\n")
 }

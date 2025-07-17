@@ -1,0 +1,14 @@
+services:
+  db:
+    container_name: "hyskysfc_db"
+    image: postgres:12.4-alpine
+    volumes:
+      - "./database/postgres-data:/var/lib/postgresql/data:rw"
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: "hyskysfc"
+      POSTGRES_USER: "hyskysfc"
+      POSTGRES_PASSWORD: "hyskysfc"
+    restart: unless-stopped
+
