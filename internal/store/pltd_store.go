@@ -6,45 +6,10 @@ import (
 	"database/sql"
 )
 
-type StatusMesin int
-
-const (
-	Tersedia StatusMesin = iota
-	Gangguan
-	Pemeliharaan
-)
-
-func (sm StatusMesin) String() string {
-	return [...]string{"tersedia", "gangguan", "pemeliharaan"}[sm];
-}
-
-func (s *StatusMesin) UnmarshalJSON(data []byte) error {
-	var statusStr string
-	if err := json.Unmarshal(data, &statusStr); err != nil {
-		return err
-	}
-
-	switch statusStr {
-	case "tersedia":
-		*s = Tersedia
-	case "gangguan":
-		*s = Gangguan
-	case "pemeliharaan":
-		*s = Pemeliharaan
-	default:
-		return fmt.Errorf("unknown status: %s", statusStr)
-	}
-	return nil
-}
-
-func (s StatusMesin) MarshalJSON() ([]byte, error) {
-	return json.Marshal(s.String())
-}
-
 type PLTD struct {
 	ID string `json:"id"`
 	Name string `json:"name"`
-	Status StatusMesin `json:"status"`
+	Status string `json:"status"`
 	Efisiensi map[string]float64 `json:"efisiensi"`
 	BatasBeban int `json:"batas_beban"`
 }
@@ -67,7 +32,7 @@ type PLTDStore interface {
 
 func (pg *PostgresPLTDStore) GetAllPLTD() ([]*PLTD, error) {
 	query := `
-	SELECT (id, name, status, efisiensi, batas_beban)
+	SELECT id, name, status, efisiensi, batas_beban
 	FROM mesin_pltd
 	`
 
@@ -81,23 +46,11 @@ func (pg *PostgresPLTDStore) GetAllPLTD() ([]*PLTD, error) {
 
 	for rows.Next() {
 		var pltd PLTD
-		var statusStr string
 		var efisiensiByte []byte
 
-		err := rows.Scan(&pltd.ID, &pltd.Name, &statusStr, &efisiensiByte, &pltd.BatasBeban)
+		err := rows.Scan(&pltd.ID, &pltd.Name, &pltd.Status, &efisiensiByte, &pltd.BatasBeban)
 		if err != nil {
 			return nil, err
-		}
-
-		switch statusStr {
-		case "tersedia":
-			pltd.Status = Tersedia
-		case "gangguan":
-			pltd.Status = Gangguan
-		case "pemeliharaan":
-			pltd.Status = Pemeliharaan
-		default:
-			return nil, fmt.Errorf("Invalid status value: %s", statusStr)
 		}
 
 		err = json.Unmarshal(efisiensiByte, &pltd.Efisiensi)
@@ -129,7 +82,7 @@ func (pg *PostgresPLTDStore) CreatePLTD(pltd *PLTD) (*PLTD, error) {
 	RETURNING id
 	`
 
-	err = tx.QueryRow(query, pltd.Name, pltd.Status.String(), pltd.Efisiensi, pltd.BatasBeban).Scan(&pltd.ID)
+	err = tx.QueryRow(query, pltd.Name, pltd.Status, pltd.Efisiensi, pltd.BatasBeban).Scan(&pltd.ID)
 	if err != nil {
 		return nil, err
 	}
@@ -145,19 +98,29 @@ func (pg *PostgresPLTDStore) CreatePLTD(pltd *PLTD) (*PLTD, error) {
 func (pg *PostgresPLTDStore) GetPLTDByID(id int64) (*PLTD, error) {
 	pltd := &PLTD{}
 
+	var efisiensiBytes []byte
 	query := `
-	SELECT (id, name, status, efisiensi, batas_beban)
+	SELECT id, name, status, efisiensi, batas_beban
 	FROM mesin_pltd
 	WHERE id=$1
 	`
 
-	err := pg.db.QueryRow(query, id).Scan(&pltd.ID, &pltd.Name, &pltd.Status, &pltd.Efisiensi, &pltd.BatasBeban)
+	err := pg.db.QueryRow(query, id).Scan(&pltd.ID, &pltd.Name, &pltd.Status, &efisiensiBytes, &pltd.BatasBeban)
 	if err == sql.ErrNoRows {
 		return nil, nil
 	}
 
 	if err != nil {
 		return nil, err
+	}
+
+	// Parse efisiensi dari JSON []byte ke map
+	if len(efisiensiBytes) > 0 {
+		if err := json.Unmarshal(efisiensiBytes, &pltd.Efisiensi); err != nil {
+			return nil, fmt.Errorf("gagal unmarshal efisiensi: %w", err)
+		}
+	} else {
+		pltd.Efisiensi = make(map[string]float64) // jika null
 	}
 
 	return pltd, nil
