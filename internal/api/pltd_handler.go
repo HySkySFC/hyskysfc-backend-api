@@ -1,104 +1,92 @@
 package api
 
 import (
-	"fmt"
-	"strconv"
+	"log"
 	"net/http"
 	"encoding/json"
 	"database/sql"
-	"github.com/go-chi/chi/v5"
 	"github.com/HySkySFC/hyskysfc-backend-api/internal/store"
+	"github.com/HySkySFC/hyskysfc-backend-api/internal/utils"
 )
 
 type PLTDHandler struct {
 	pltdStore store.PLTDStore
+	logger *log.Logger
 }
 
-func NewPLTDHandler(pltdStore store.PLTDStore) *PLTDHandler {
+func NewPLTDHandler(pltdStore store.PLTDStore, logger *log.Logger) *PLTDHandler {
 	return &PLTDHandler{
 		pltdStore: pltdStore,
+		logger: logger,
 	}
 }
 
 func (ph *PLTDHandler) HandleGetAllPLTD(w http.ResponseWriter, r *http.Request) {
 	pltdList, err := ph.pltdStore.GetAllPLTD()
 	if err != nil {
-		fmt.Println(err)
-		http.Error(w, "Failed to fetch pltd", http.StatusInternalServerError)
+		ph.logger.Printf("ERROR: getAllPLTD: %v", err)
+		utils.WriteJSON(w, http.StatusInternalServerError, utils.Envelope{"error": "Internal server error"})
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(pltdList)
+	utils.WriteJSON(w, http.StatusOK, utils.Envelope{"pltd": pltdList})
 }
 
 func (ph *PLTDHandler) HandleGetPLTDByID(w http.ResponseWriter, r *http.Request) {
-	paramsPLTDID := chi.URLParam(r, "id")
-	if paramsPLTDID == "" {
-		http.NotFound(w, r)
-		return
-	}
-
-	pltdID, err := strconv.ParseInt(paramsPLTDID, 10, 64)
+	pltdID, err := utils.ReadIDParam(r)
 	if err != nil {
-		http.NotFound(w, r)
+		ph.logger.Printf("ERROR: readIDParam: %v", err)
+		utils.WriteJSON(w, http.StatusBadRequest, utils.Envelope{"error": "Invalid PLTD id"})
 		return
 	}
 
 	pltd, err := ph.pltdStore.GetPLTDByID(pltdID)
 	if err != nil {
-		fmt.Println(err)
-		http.Error(w, "Failed to read the pltd", http.StatusNotFound)
+		ph.logger.Printf("ERROR: getPLTDByID: %v", err)
+		utils.WriteJSON(w, http.StatusNotFound, utils.Envelope{"error": "PLTD not found."})
 		return 
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(pltd)
+	utils.WriteJSON(w, http.StatusOK, utils.Envelope{"pltd": pltd})
 } 
 
 func (ph *PLTDHandler) HandleCreatePLTD(w http.ResponseWriter, r *http.Request) {
 	var pltd store.PLTD
 	err := json.NewDecoder(r.Body).Decode(&pltd)
 	if err != nil {
-		fmt.Println(err)
-		http.Error(w, "Failed to create pltd", http.StatusInternalServerError)
+		ph.logger.Printf("ERROR: decode PLTD: %v", err)
+		utils.WriteJSON(w, http.StatusInternalServerError, utils.Envelope{"error": "Internal server error"})
 		return
 	}
 
 	createdPLTD, err := ph.pltdStore.CreatePLTD(&pltd)
 	if err != nil {
-		fmt.Println(err)
-		http.Error(w, "Failed to create pltd", http.StatusInternalServerError)
+		ph.logger.Printf("ERROR: create PLTD: %v", err)
+		utils.WriteJSON(w, http.StatusBadRequest, utils.Envelope{"error": "Invalid request payload"})
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(createdPLTD)
+	utils.WriteJSON(w, http.StatusCreated, utils.Envelope{"pltd": createdPLTD})
 }
 
 func (ph *PLTDHandler) HandleUpdatePLTDByID(w http.ResponseWriter, r *http.Request) {
-	paramsPLTDID := chi.URLParam(r, "id")
-	if paramsPLTDID == "" {
-		http.NotFound(w, r)
-		return
-	}
-
-	pltdID, err := strconv.ParseInt(paramsPLTDID, 10, 64)
+	pltdID, err := utils.ReadIDParam(r)
 	if err != nil {
-		http.NotFound(w, r)
+		ph.logger.Printf("ERROR: readIDParam: %v", err)
+		utils.WriteJSON(w, http.StatusBadRequest, utils.Envelope{"error": "Invalid workout id"})
 		return
 	}
 
 	existingPLTD, err := ph.pltdStore.GetPLTDByID(pltdID)
 	if err != nil {
-		http.Error(w, "Failed to fetch pltd", http.StatusInternalServerError)
+		ph.logger.Printf("ERROR: get PLTD by ID: %v", err)
+		utils.WriteJSON(w, http.StatusInternalServerError, utils.Envelope{"error": "Internal server error"})
 		return
 	}
 
 	if existingPLTD == nil {
-		http.NotFound(w, r)
+		ph.logger.Printf("ERROR: existingPLTD: %v", err)
+		utils.WriteJSON(w, http.StatusNotFound, utils.Envelope{"error": "PLTD Not Found"})
 		return
 	}
 
@@ -133,42 +121,35 @@ func (ph *PLTDHandler) HandleUpdatePLTDByID(w http.ResponseWriter, r *http.Reque
 
 	err = ph.pltdStore.UpdatePLTD(existingPLTD)
 	if err != nil {
-		fmt.Println("update workout error", err)
-		http.Error(w, "failed to update the pltd", http.StatusInternalServerError)
+		ph.logger.Printf("ERROR: updatePLTD: %v", err)
+		utils.WriteJSON(w, http.StatusInternalServerError, utils.Envelope{"error": "Internal server error"})
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(existingPLTD)
+	utils.WriteJSON(w, http.StatusOK, utils.Envelope{"pltd": existingPLTD})
 }
 
 func (ph *PLTDHandler) HandleDeletePLTDByID(w http.ResponseWriter, r *http.Request) {
-	paramsPLTDID := chi.URLParam(r, "id")
-	if paramsPLTDID == "" {
-		http.NotFound(w, r)
-		return
-	}
-
-	pltdID, err := strconv.ParseInt(paramsPLTDID, 10, 64)
+	pltdID, err := utils.ReadIDParam(r)
 	if err != nil {
-		http.NotFound(w, r)
+		ph.logger.Printf("ERROR: readIDParam: %v", err)
+		utils.WriteJSON(w, http.StatusBadRequest, utils.Envelope{"error": "Invalid workout id"})
 		return
 	}
 
 	err = ph.pltdStore.DeletePLTD(pltdID)
 	if err == sql.ErrNoRows {
-		fmt.Println(err)
-		http.Error(w, "PLTD not found", http.StatusNotFound)
+		ph.logger.Printf("ERROR: deletePLTD: %v", err)
+		utils.WriteJSON(w, http.StatusNotFound, utils.Envelope{"error": "PLTD not found"})
 		return
 	}
 
 	if err != nil {
-		fmt.Println(err)
-		http.Error(w, "error deleting workout", http.StatusInternalServerError)
+		ph.logger.Printf("ERROR: deletePLTD: %v", err)
+		utils.WriteJSON(w, http.StatusInternalServerError, utils.Envelope{"error": "Internal server error"})
 		return
 	}
 
-	w.WriteHeader(http.StatusNoContent)
+	utils.WriteJSON(w, http.StatusNoContent, utils.Envelope{"pltd": "PLTD successfully deleted"})
 }
 
