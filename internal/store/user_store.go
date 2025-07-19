@@ -82,7 +82,7 @@ func (s *PostgresUserStore) GetUserByUsername(username string) (*User, error) {
 		PasswordHash: password{},
 	}
 	query := `
-	SELECT id, username, password_hash, created_at, updated_at
+	SELECT id, username, password_hash, email, created_at, updated_at
 	FROM users
 	WHERE username = $1
 	`
