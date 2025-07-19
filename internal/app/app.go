@@ -8,6 +8,7 @@ import (
 	"database/sql"
 	"github.com/HySkySFC/hyskysfc-backend-api/internal/api"
 	"github.com/HySkySFC/hyskysfc-backend-api/internal/store"
+	"github.com/HySkySFC/hyskysfc-backend-api/internal/middleware"
 	"github.com/HySkySFC/hyskysfc-backend-api/migrations"
 )
 
@@ -16,6 +17,7 @@ type Application struct {
 	PLTDHandler *api.PLTDHandler
 	UserHandler *api.UserHandler
 	TokenHandler *api.TokenHandler
+	Middleware middleware.UserMiddleware
 	DB *sql.DB
 }
 
@@ -39,11 +41,14 @@ func NewApplication() (*Application, error) {
 	pltdHandler := api.NewPLTDHandler(pltdStore, logger)
 	userHandler := api.NewUserHandler(userStore, logger)
 	tokenHandler := api.NewTokenHandler(tokenStore, userStore, logger)
+	middlewareHandler := middleware.UserMiddleware{UserStore: userStore}
+
 	app := &Application{
 		Logger: logger,
 		PLTDHandler: pltdHandler,
 		UserHandler: userHandler,
 		TokenHandler: tokenHandler,
+		Middleware: middlewareHandler,
 		DB: pgDB,
 	}
 

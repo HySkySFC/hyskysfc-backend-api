@@ -8,13 +8,17 @@ import (
 func SetupRoutes(app *app.Application) *chi.Mux {
 	r := chi.NewRouter()
 
-	r.Get("/health", app.HealthCheck)
+	r.Group(func (r chi.Router) {
+		r.Use(app.Middleware.Authenticate)
 
-	r.Get("/pltd", app.PLTDHandler.HandleGetAllPLTD)
-	r.Get("/pltd/{id}", app.PLTDHandler.HandleGetPLTDByID)
-	r.Post("/pltd", app.PLTDHandler.HandleCreatePLTD)
-	r.Put("/pltd/{id}", app.PLTDHandler.HandleUpdatePLTDByID)
-	r.Delete("/pltd/{id}", app.PLTDHandler.HandleDeletePLTDByID)
+		r.Get("/pltd", app.Middleware.RequireUser(app.PLTDHandler.HandleGetAllPLTD))
+		r.Get("/pltd/{id}", app.Middleware.RequireUser(app.PLTDHandler.HandleGetPLTDByID))
+		r.Post("/pltd", app.Middleware.RequireUser(app.PLTDHandler.HandleCreatePLTD))
+		r.Put("/pltd/{id}", app.Middleware.RequireUser(app.PLTDHandler.HandleUpdatePLTDByID))
+		r.Delete("/pltd/{id}", app.Middleware.RequireUser(app.PLTDHandler.HandleDeletePLTDByID))
+	})
+
+	r.Get("/health", app.HealthCheck)
 
 	r.Post("/users", app.UserHandler.HandleRegisterUser)
 	r.Post("/token/authentication", app.TokenHandler.HandleCreateToken)
