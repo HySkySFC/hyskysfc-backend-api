@@ -15,6 +15,8 @@ func SetupRoutes(app *app.Application) *chi.Mux {
 	r.Post("/pltd", app.PLTDHandler.HandleCreatePLTD)
 	r.Put("/pltd/{id}", app.PLTDHandler.HandleUpdatePLTDByID)
 	r.Delete("/pltd/{id}", app.PLTDHandler.HandleDeletePLTDByID)
+
+	r.Post("/users", app.UserHandler.HandleRegisterUser)
 	return r
 }
 
