@@ -14,6 +14,10 @@ docker compose build up
 
 ## Migration
 Running migration with run main.go
+Note:
+```bash
+goose -dir migrations postgres "postgres://hyskysfc:hyskysfc@localhost:5432/hyskysfc?sslmode=disable" up
+```
 
 ## API Documentation
 This full documentation to access api endpoint.
