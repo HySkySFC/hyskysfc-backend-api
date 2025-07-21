@@ -65,7 +65,7 @@ body:
 {
     "name": "Mesin 1",
     "status": "tersedia",
-    "efisitensi": {
+    "efisiensi": {
         "100%": 0.2555,
         "75%": 0.2455,
         "50%": 0.2333,
@@ -80,7 +80,7 @@ body
 {
     "name": "Mesin 1",
     "status": "tersedia",
-    "efisitensi": {
+    "efisiensi": {
         "100%": 0.2555,
         "75%": 0.2455,
         "50%": 0.2333,
