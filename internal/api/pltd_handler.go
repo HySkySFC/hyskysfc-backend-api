@@ -73,7 +73,7 @@ func (ph *PLTDHandler) HandleUpdatePLTDByID(w http.ResponseWriter, r *http.Reque
 	pltdID, err := utils.ReadIDParam(r)
 	if err != nil {
 		ph.logger.Printf("ERROR: readIDParam: %v", err)
-		utils.WriteJSON(w, http.StatusBadRequest, utils.Envelope{"error": "Invalid workout id"})
+		utils.WriteJSON(w, http.StatusBadRequest, utils.Envelope{"error": "Invalid PLTD id"})
 		return
 	}
 
@@ -133,7 +133,7 @@ func (ph *PLTDHandler) HandleDeletePLTDByID(w http.ResponseWriter, r *http.Reque
 	pltdID, err := utils.ReadIDParam(r)
 	if err != nil {
 		ph.logger.Printf("ERROR: readIDParam: %v", err)
-		utils.WriteJSON(w, http.StatusBadRequest, utils.Envelope{"error": "Invalid workout id"})
+		utils.WriteJSON(w, http.StatusBadRequest, utils.Envelope{"error": "Invalid PLTD id"})
 		return
 	}
 
