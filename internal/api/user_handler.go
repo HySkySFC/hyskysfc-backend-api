@@ -84,10 +84,6 @@ func (h *UserHandler) HandleRegisterUser(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	utils.WriteJSON(w, http.StatusOK, utils.Envelope{"user": user})
+	utils.WriteJSON(w, http.StatusOK, utils.Envelope{"data": user})
 }
-
-
-
-
 

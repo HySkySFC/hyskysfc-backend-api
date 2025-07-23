@@ -29,7 +29,7 @@ func (ph *PLTDHandler) HandleGetAllPLTD(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	utils.WriteJSON(w, http.StatusOK, utils.Envelope{"pltd": pltdList})
+	utils.WriteJSON(w, http.StatusOK, utils.Envelope{"data": pltdList})
 }
 
 func (ph *PLTDHandler) HandleGetPLTDByID(w http.ResponseWriter, r *http.Request) {
@@ -47,7 +47,7 @@ func (ph *PLTDHandler) HandleGetPLTDByID(w http.ResponseWriter, r *http.Request)
 		return 
 	}
 
-	utils.WriteJSON(w, http.StatusOK, utils.Envelope{"pltd": pltd})
+	utils.WriteJSON(w, http.StatusOK, utils.Envelope{"data": pltd})
 } 
 
 func (ph *PLTDHandler) HandleCreatePLTD(w http.ResponseWriter, r *http.Request) {
@@ -66,7 +66,7 @@ func (ph *PLTDHandler) HandleCreatePLTD(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	utils.WriteJSON(w, http.StatusCreated, utils.Envelope{"pltd": createdPLTD})
+	utils.WriteJSON(w, http.StatusCreated, utils.Envelope{"data": createdPLTD})
 }
 
 func (ph *PLTDHandler) HandleUpdatePLTDByID(w http.ResponseWriter, r *http.Request) {
@@ -126,7 +126,7 @@ func (ph *PLTDHandler) HandleUpdatePLTDByID(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	utils.WriteJSON(w, http.StatusOK, utils.Envelope{"pltd": existingPLTD})
+	utils.WriteJSON(w, http.StatusOK, utils.Envelope{"data": existingPLTD})
 }
 
 func (ph *PLTDHandler) HandleDeletePLTDByID(w http.ResponseWriter, r *http.Request) {
@@ -150,6 +150,6 @@ func (ph *PLTDHandler) HandleDeletePLTDByID(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	utils.WriteJSON(w, http.StatusNoContent, utils.Envelope{"pltd": "PLTD successfully deleted"})
+	utils.WriteJSON(w, http.StatusNoContent, utils.Envelope{"message": "PLTD successfully deleted"})
 }
 
