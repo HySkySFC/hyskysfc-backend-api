@@ -57,7 +57,7 @@ func (h *TokenHandler) HandleCreateToken(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	token, err := h.tokenStore.CreateNewToken(user.ID, 24*time.Hour, tokens.ScopeAuth)
+	token, err := h.tokenStore.CreateNewToken(user.ID, 30*24*time.Hour, tokens.ScopeAuth)
 	if err != nil {
 		h.logger.Printf("ERROR: Creating Token: %v", err)
 		utils.WriteJSON(w, http.StatusInternalServerError, utils.Envelope{"error": "internal server error"})
