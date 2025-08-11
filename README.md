@@ -91,3 +91,19 @@ body
 ### Delete PLTD By ID
 DELETE /pltd/:id
 
+### Get All PLTS
+GET /plts
+
+### Save Bulk PLTS
+POST /plts
+body:
+```json
+[
+    {
+        "time": "12"
+        "beban": "250"
+    },
+    ...
+]
+```
+

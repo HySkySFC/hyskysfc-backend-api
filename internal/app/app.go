@@ -15,6 +15,7 @@ import (
 type Application struct {
 	Logger *log.Logger
 	PLTDHandler *api.PLTDHandler
+	PLTSHandler *api.PLTSHandler
 	UserHandler *api.UserHandler
 	TokenHandler *api.TokenHandler
 	Middleware middleware.UserMiddleware
@@ -35,10 +36,12 @@ func NewApplication() (*Application, error) {
 	logger := log.New(os.Stdout, "", log.Ldate|log.Ltime)
 
 	pltdStore := store.NewPostgresPLTDStore(pgDB)
+	pltsStore := store.NewPostgresPLTSStore(pgDB)
 	userStore := store.NewPostgresUserStore(pgDB)
 	tokenStore := store.NewPostgresTokenStore(pgDB)
 
 	pltdHandler := api.NewPLTDHandler(pltdStore, logger)
+	pltsHandler := api.NewPLTSHandler(pltsStore, logger)
 	userHandler := api.NewUserHandler(userStore, logger)
 	tokenHandler := api.NewTokenHandler(tokenStore, userStore, logger)
 	middlewareHandler := middleware.UserMiddleware{UserStore: userStore}
@@ -46,6 +49,7 @@ func NewApplication() (*Application, error) {
 	app := &Application{
 		Logger: logger,
 		PLTDHandler: pltdHandler,
+		PLTSHandler: pltsHandler,
 		UserHandler: userHandler,
 		TokenHandler: tokenHandler,
 		Middleware: middlewareHandler,
